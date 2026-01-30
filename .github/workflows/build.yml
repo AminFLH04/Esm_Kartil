@@ -1,0 +1,38 @@
+name: Build macOS Version
+
+on:
+  push:
+    branches: [ main ] # یا هر شاخه‌ای که ازش استفاده می‌کنی
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # یا ورژنی که استفاده می‌کنی
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install customtkinter pyinstaller
+        # اگر کتابخانه دیگه‌ای هم داری اینجا اضافه کن
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --noconfirm --onefile --windowed \
+        --icon="icon.icns" \
+        --add-data "$(python -c 'import customtkinter; print(customtkinter.__path__[0])'):customtkinter/" \
+        esm_kartil.py
+      # نکته: چون اینجا مک هست، جداکننده رو دو نقطه (:) گذاشتم
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macOS-Executable
+        path: dist/esm_kartil
